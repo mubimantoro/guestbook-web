@@ -11,15 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('guests', function (Blueprint $table) {
+        Schema::create('kategori_kunjungans', function (Blueprint $table) {
             $table->id();
             $table->string('nama');
-            $table->string('nomor_hp', 20);
-            $table->string('institusi');
-            $table->text('tujuan');
-            $table->text('catatan')->nullable();
-            $table->dateTime('tanggal_kunjungan')->nullable();
-            $table->enum('status', ['pending', 'approved', 'completed', 'cancelled'])->default('pending');
+            $table->string('slug')->unique();
             $table->timestamps();
         });
     }
@@ -29,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('guests');
+        Schema::dropIfExists('kategori_kunjungans');
     }
 };

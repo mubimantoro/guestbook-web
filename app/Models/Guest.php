@@ -11,6 +11,7 @@ class Guest extends Model
         'nomor_hp',
         'institusi',
         'tujuan',
+        'catatan',
         'tanggal_kunjungan',
         'status',
     ];
