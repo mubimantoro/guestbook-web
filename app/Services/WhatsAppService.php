@@ -101,10 +101,10 @@ class WhatsAppService
             : 'Tidak ditentukan';
 
         return "🔔 *TAMU BARU TERDAFTAR*\n\n" .
-            " *Nama:* {$guest['nama']}\n" .
+            " *Nama:* {$guest['nama_lengkap']}\n" .
             "*No HP:* {$guest['nomor_hp']}\n" .
-            "*Institusi:* {$guest['institusi']}\n" .
-            "*Tujuan:* {$guest['tujuan']}\n" .
+            "*Instansi:* {$guest['instansi']}\n" .
+            // "*Tujuan:* {$guest['tujuan']}\n" .
             "*Tanggal Kunjungan:* {$tanggal}\n" .
             ($guest['catatan'] ? "📌 *Catatan:* {$guest['catatan']}\n\n" : "") .
             "Silakan cek dashboard untuk detail lengkap.";
@@ -117,10 +117,10 @@ class WhatsAppService
             : 'Akan dikonfirmasi';
 
         return "✅ *TERIMA KASIH TELAH MENDAFTAR*\n\n" .
-            "Halo *{$guest['nama']}*,\n\n" .
+            "Halo *{$guest['nama_lengkap']}*,\n\n" .
             "Pendaftaran Anda telah kami terima dengan detail:\n\n" .
-            "*Institusi:* {$guest['institusi']}\n" .
-            "*Tujuan:* {$guest['tujuan']}\n" .
+            "*Instansi:* {$guest['instansi']}\n" .
+            // "*Tujuan:* {$guest['tujuan']}\n" .
             "*Tanggal:* {$tanggal}\n\n" .
             "Tim kami akan segera menghubungi Anda untuk konfirmasi.\n\n" .
             "Terima kasih! 🙏";
@@ -136,11 +136,11 @@ class WhatsAppService
         $statusMessage = $statusMessages[$newStatus] ?? "Status berubah menjadi: " . strtoupper($newStatus);
 
         $message = "🔔 *UPDATE STATUS KUNJUNGAN*\n\n" .
-            "Halo *{$guest['nama']}*,\n\n" .
+            "Halo *{$guest['nama_lengkap']}*,\n\n" .
             "{$statusMessage}\n\n" .
             "*Detail Kunjungan:*\n" .
-            "Institusi: {$guest['institusi']}\n" .
-            "Tujuan: {$guest['tujuan']}\n\n" .
+            "Instansi: {$guest['instansi']}\n" .
+            // "Tujuan: {$guest['tujuan']}\n\n" .
             "Hubungi kami jika ada pertanyaan.\n\n" .
             "Terima kasih! 🙏";
 

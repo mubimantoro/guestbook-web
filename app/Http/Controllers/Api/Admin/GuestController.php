@@ -15,7 +15,6 @@ class GuestController extends Controller
             $guests = $guests->where('nama', 'like', '%' . request()->search . '%');
         })->latest()->paginate(5);
 
-        $guests->appends(['search' => request()->search]);
 
         return new GuestResource(true, 'List data Tamu', $guests);
     }

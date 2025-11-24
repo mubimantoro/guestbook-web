@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('tamus', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
+            $table->string('nama_lengkap');
             $table->string('nomor_hp', 20);
             $table->string('instansi');
             $table->dateTime('tanggal_kunjungan')->nullable();
-            $table->foreignId('kategori_kunjungan')->references('id')->on('kategori_kunjungans')->cascadeOnDelete();
+            $table->foreignId('kategori_kunjungan_id')->references('id')->on('kategori_kunjungans')->cascadeOnDelete();
             $table->text('catatan')->nullable();
             $table->string('status');
             $table->timestamps();

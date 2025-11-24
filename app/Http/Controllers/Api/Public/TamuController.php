@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers\Api\Public;
 
-use App\GuestStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\GuestResource;
+use App\Http\Resources\TamuResource;
 use App\Jobs\SendWhatsAppNotification;
-use App\Models\Guest;
 use App\Models\Tamu;
 use App\Services\WhatsAppService;
+use App\TamuStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class GuestController extends Controller
+class TamuController extends Controller
 {
     protected $whatsappService;
 
@@ -22,48 +21,40 @@ class GuestController extends Controller
         $this->whatsappService = $whatsappService;
     }
 
-
     public function store(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
-                'nama' => 'required|string',
+                'nama_lengkap' => 'required|string',
                 'nomor_hp' => 'required|string|max:15',
-                'institusi' => 'required|string',
-                'tujuan' => 'required|string',
+                'instansi' => 'required|string',
+                'kategori_kunjungan_id' => 'required',
+                'tanggal_kunjungan' => 'date',
                 'catatan' => 'nullable|string',
-                'tanggal_kunjungan' => 'nullable|date',
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors(),
-                ], 422);
+                return response()->json($validator->errors(), 422);
             }
 
-            $guest = Tamu::create([
-                'nama' => $request->nama,
+            $tamu = Tamu::create([
+                'nama_lengkap' => $request->nama_lengkap,
                 'nomor_hp' => $request->nomor_hp,
                 'instansi' => $request->instansi,
-                'tujuan' => $request->tujuan,
-                'catatan' => $request->catatan,
+                'kategori_kunjungan_id' => $request->kategori_kunjungan_id,
                 'tanggal_kunjungan' => $request->tanggal_kunjungan,
-                'status' => $request->status ?? GuestStatus::Pending->value
+                'catatan' => $request->catatan,
+                'status' => TamuStatus::Pending->value
             ]);
 
             $adminPhone = config('services.fonnte.admin_phone');
-            $adminMessage = $this->whatsappService->notifyAdminNewGuest($guest->toArray());
-            $guestMessage = $this->whatsappService->sendGuestConfirmation($guest->toArray());
+            $adminMessage = $this->whatsappService->notifyAdminNewGuest($tamu->toArray());
+            $guestMessage = $this->whatsappService->sendGuestConfirmation($tamu->toArray());
 
             SendWhatsAppNotification::dispatch($adminPhone, $adminMessage);
-            SendWhatsAppNotification::dispatch($guest->nomor_hp, $guestMessage);
+            SendWhatsAppNotification::dispatch($tamu->nomor_hp, $guestMessage);
 
-            Log::info('Guest created, WhatsApp notifications queued', [
-                'guest_id' => $guest->id
-            ]);
-
-            return new GuestResource(true, 'Data Tamu berhasil ditambahkan', $guest);
+            return new TamuResource(true, 'Data Tamu berhasil ditambahkan', $tamu);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

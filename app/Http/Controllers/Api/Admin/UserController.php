@@ -25,7 +25,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nama_lengkap'  => 'required',
-            'nomor_hp' => 'required|string|max:20',
+            'nomor_hp' => 'required|string|max:15',
             'username'  => 'required|unique:users|alpha_dash|max:50',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6'
@@ -81,7 +81,7 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required',
-            'nomor_hp' => 'nullable|string|max:20',
+            'nomor_hp' => 'nullable|string|max:15',
             'username' => 'nullable|alpha_dash|max:50|unique:users,username' . $user->id,
             'email' => 'nullable|unique:users,email,' . $user->id,
             'password' => 'nullable|min:6',
