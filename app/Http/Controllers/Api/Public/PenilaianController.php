@@ -7,5 +7,5 @@ use Illuminate\Http\Request;
 
 class PenilaianController extends Controller
 {
-    //
+    public function show() {}
 }

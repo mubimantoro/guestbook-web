@@ -6,12 +6,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PenanggungJawabResource;
 use App\Models\PenanggungJawab;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class PenanggungJawabController extends Controller
+class PenanggungJawabController extends Controller implements HasMiddleware
 {
+
+    public static function middleware()
+    {
+        return [
+            new Middleware(['permission:penanggung_jawab'], only: ['index', 'store', 'show', 'update', 'update', 'destroy'])
+        ];
+    }
+
     public function index()
     {
         $penanggungJawab = PenanggungJawab::with(['user', 'kategoriKunjungan'])->latest()->paginate(5);

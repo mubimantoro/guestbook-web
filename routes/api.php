@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Admin\KategoriKunjunganController;
+use App\Http\Controllers\Api\Admin\PermissionController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\LoginController;
@@ -15,6 +16,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 
     Route::apiResource('/tamu', \App\Http\Controllers\Api\Admin\TamuController::class);
+
+    Route::get('/permissions', [PermissionController::class, 'index']);
+    Route::get('/permissions/all', [PermissionController::class, 'all']);
 
     Route::get('/kategori-kunjungan/all', [KategoriKunjunganController::class, 'all']);
     Route::apiResource('/kategori-kunjungan', KategoriKunjunganController::class);

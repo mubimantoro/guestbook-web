@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class UserTableSeeder extends Seeder
@@ -23,6 +24,8 @@ class UserTableSeeder extends Seeder
         ]);
 
         $role = Role::where('name', 'admin')->where('guard_name', 'api')->first();
+        $permissions = Permission::where('guard_name', 'api')->get();
+        $role->syncPermissions($permissions);
         $user->assignRole($role);
     }
 }

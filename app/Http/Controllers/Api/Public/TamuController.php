@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Public;
 
+use App\Events\TamuRegistered;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TamuResource;
 use App\Jobs\SendWhatsAppNotification;
@@ -48,14 +49,13 @@ class TamuController extends Controller
                 'status' => TamuStatus::Pending->value
             ]);
 
+            $tamu->load('kategoriKunjungan');
+
             $this->whatsappService->sendConfirmationToGuest($tamu);
 
-            if ($tamu->pic_id) {
-                $pic = PenanggungJawab::with('user')->find($tamu->pic_id);
-                $this->whatsappService->sendNotificationToPIC($pic, $tamu);
-            }
+            event(new TamuRegistered($tamu));
 
-            return new TamuResource(true, 'Data Tamu berhasil ditambahkan', $tamu);
+            return new TamuResource(true, 'Pendaftaran berhasil!', $tamu);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

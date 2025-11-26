@@ -57,6 +57,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(PenanggungJawab::class);
     }
 
+    public function getPermissionArray()
+    {
+        return $this->getAllPermissions()->mapWithKeys(function ($pr) {
+            return [$pr['name'] => true];
+        });
+    }
+
     /**
      * getJWTIdentifier
      *

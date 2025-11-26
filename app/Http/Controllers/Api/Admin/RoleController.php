@@ -5,11 +5,20 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\RoleResource;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
-class RoleController extends Controller
+class RoleController extends Controller implements HasMiddleware
 {
+    public static function middleware()
+    {
+        return [
+            new Middleware(['permission:roles'], only: ['index', 'store', 'show', 'update', 'destroy', 'all'])
+        ];
+    }
+
     public function index()
     {
         $roles = Role::when(request()->search, function ($roles) {
@@ -26,6 +35,7 @@ class RoleController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
+            'permissions' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -33,7 +43,7 @@ class RoleController extends Controller
         }
 
         $role = Role::create(['name' => $request->name]);
-        // $role->givePermissionTo($request->permissions);
+        $role->givePermissionTo($request->permissions);
 
         if ($role) {
             return new RoleResource(true, 'Data Role berhasil disimpan', $role);
@@ -57,6 +67,7 @@ class RoleController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
+            'permissions' => 'required'
         ]);
 
         if ($validator->fails()) {

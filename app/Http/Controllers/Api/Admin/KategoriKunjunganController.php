@@ -6,11 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\KategoriKunjunganResource;
 use App\Models\KategoriKunjungan;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
-class KategoriKunjunganController extends Controller
+class KategoriKunjunganController extends Controller implements HasMiddleware
 {
+
+    public static function middleware()
+    {
+        return [
+            new Middleware(['permission:kategori_kunjungan'], only: ['index', 'store', 'show', 'update', 'destroy', 'all'])
+        ];
+    }
+
     public function index()
     {
         $kategoriKunjungan = KategoriKunjungan::latest()->paginate(5);
