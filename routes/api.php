@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\KategoriKunjunganController;
 use App\Http\Controllers\Api\Admin\RoleController;
+use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Public\GuestController;
 use App\Http\Controllers\Api\Public\TamuController;
@@ -13,11 +14,18 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::group(['middleware' => 'auth:api'], function () {
     Route::post('/logout', [LoginController::class, 'logout']);
 
-    Route::apiResource('/tamu', App\Http\Controllers\Api\Admin\TamuController::class);
+    Route::apiResource('/tamu', \App\Http\Controllers\Api\Admin\TamuController::class);
+
+    Route::get('/kategori-kunjungan/all', [KategoriKunjunganController::class, 'all']);
     Route::apiResource('/kategori-kunjungan', KategoriKunjunganController::class);
     Route::get('/roles/all', [\App\Http\Controllers\Api\Admin\RoleController::class, 'all']);
+
     Route::apiResource('/roles', RoleController::class);
-    Route::apiResource('/users', App\Http\Controllers\Api\Admin\UserController::class);
+
+    Route::get('/users/role/pic', [UserController::class, 'getPicUsers']);
+    Route::apiResource('/users', \App\Http\Controllers\Api\Admin\UserController::class);
+
+    Route::apiResource('/penanggung-jawab', \App\Http\Controllers\Api\Admin\PenanggungJawabController::class);
 });
 
 

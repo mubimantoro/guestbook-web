@@ -52,6 +52,11 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    public function penanggungJawab()
+    {
+        return $this->hasMany(PenanggungJawab::class);
+    }
+
     /**
      * getJWTIdentifier
      *

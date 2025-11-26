@@ -82,7 +82,7 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'nama_lengkap' => 'required',
             'nomor_hp' => 'nullable|string|max:15',
-            'username' => 'nullable|alpha_dash|max:50|unique:users,username' . $user->id,
+            'username' => 'nullable|alpha_dash|max:50|unique:users,username,' . $user->id,
             'email' => 'nullable|unique:users,email,' . $user->id,
             'password' => 'nullable|min:6',
         ]);
@@ -125,5 +125,11 @@ class UserController extends Controller
         }
 
         return new UserResource(false, 'Data User gagal dihapus', null);
+    }
+
+    public function getPicUsers()
+    {
+        $users = User::role('pic')->get();
+        return new UserResource(true, 'Data Users PIC', $users);
     }
 }

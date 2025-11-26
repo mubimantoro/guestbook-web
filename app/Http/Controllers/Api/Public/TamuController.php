@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Public;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TamuResource;
 use App\Jobs\SendWhatsAppNotification;
+use App\Models\PenanggungJawab;
 use App\Models\Tamu;
 use App\Services\WhatsAppService;
 use App\TamuStatus;
@@ -47,12 +48,12 @@ class TamuController extends Controller
                 'status' => TamuStatus::Pending->value
             ]);
 
-            $adminPhone = config('services.fonnte.admin_phone');
-            $adminMessage = $this->whatsappService->notifyAdminNewGuest($tamu->toArray());
-            $guestMessage = $this->whatsappService->sendGuestConfirmation($tamu->toArray());
+            $this->whatsappService->sendConfirmationToGuest($tamu);
 
-            SendWhatsAppNotification::dispatch($adminPhone, $adminMessage);
-            SendWhatsAppNotification::dispatch($tamu->nomor_hp, $guestMessage);
+            if ($tamu->pic_id) {
+                $pic = PenanggungJawab::with('user')->find($tamu->pic_id);
+                $this->whatsappService->sendNotificationToPIC($pic, $tamu);
+            }
 
             return new TamuResource(true, 'Data Tamu berhasil ditambahkan', $tamu);
         } catch (\Exception $e) {
