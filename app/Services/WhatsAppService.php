@@ -12,6 +12,8 @@ class WhatsAppService
     protected $client;
     protected $apiUrl;
     protected $token;
+    protected $maxMessagesPerHour = 50;
+
     /**
      * Create a new class instance.
      */
@@ -38,6 +40,7 @@ class WhatsAppService
                     } else {
                         Log::error("Failed to send notification to admin: {$admin->nama_lengkap}");
                     }
+                    sleep(5);
                 } else {
                     Log::warning("Admin {$admin->nama_lengkap} has no phone number");
                 }
@@ -102,11 +105,11 @@ class WhatsAppService
             ->translatedFormat('l, j F Y');
 
 
-        return "✅ *PERTEMUAN SELESAI*\n\n"
+        return "🙏 *TERIMA KASIH ATAS KUNJUNGAN ANDA*\n\n"
             . "Halo *{$tamu->nama_lengkap}*,\n\n"
-            . "Terima kasih telah berkunjung!\n\n"
-            . "*Detail Pertemuan:*\n"
-            . "Waktu: {$waktuBertemu}\n"
+            . "Kunjungan Anda telah selesai.\n\n"
+            . "*Info Pertemuan:*\n"
+            . "Tanggal: {$waktuBertemu}\n"
             . "PIC: {$tamu->pic->user->nama_lengkap}\n"
             . "*Berikan Penilaian Anda*\n"
             . "Kami sangat menghargai feedback Anda untuk meningkatkan pelayanan kami.\n\n"
