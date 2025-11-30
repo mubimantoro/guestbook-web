@@ -52,7 +52,11 @@ class PenanggungJawabController extends Controller implements HasMiddleware
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating penanggung jawab: ' . $e->getMessage());
-            return new PenanggungJawabResource(false, 'Data Penanggung Jawab gagal disimpan', null);
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Penanggung Jawab gagal disimpan',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -93,7 +97,11 @@ class PenanggungJawabController extends Controller implements HasMiddleware
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating penanggung jawab: ' . $e->getMessage());
-            return new PenanggungJawabResource(false, 'Data Penanggung Jawab gagal diupdate', null);
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Penanggung Jawab gagal diupdate',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -115,7 +123,11 @@ class PenanggungJawabController extends Controller implements HasMiddleware
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting penanggung jawab: ' . $e->getMessage());
-            return new PenanggungJawabResource(false, 'Data Penanggung Jawab gagal dihapus', null);
+            return response()->json([
+                'success' => false,
+                'message' => 'Data Penanggung Jawab gagal dihapus',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

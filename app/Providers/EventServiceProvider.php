@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Events\StatusTamuUpdated;
 use App\Events\TamuRegistered;
+use App\Listeners\SendNotificationToAdmin;
 use App\Listeners\SendNotificationToPIC;
 use App\Listeners\SendStatusUpdateToTamu;
 use Illuminate\Support\ServiceProvider;
@@ -13,13 +14,11 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         TamuRegistered::class => [
             SendNotificationToPIC::class,
+            SendNotificationToAdmin::class,
         ],
         StatusTamuUpdated::class => [
             SendStatusUpdateToTamu::class,
         ],
-        // PenilaianSubmitted::class => [
-        //     LogPenilaianSubmitted::class,
-        // ],
     ];
     /**
      * Register services.

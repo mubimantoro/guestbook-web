@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,33 @@ class WhatsAppService
         $this->apiUrl = config('services.fonnte.api_url');
         $this->token = config('services.fonnte.token');
     }
+
+    public function sendNotificationToAdmin($tamu)
+    {
+        try {
+            $admins = User::role('admin')->get();
+
+            $message = $this->buildAdminNotificationMessage($tamu);
+
+            foreach ($admins as $admin) {
+                if (!empty($admin->nomor_hp)) {
+                    $phoneNumber = $this->formatPhoneNumber($admin->nomor_hp);
+
+                    if ($this->sendMessage($phoneNumber, $message)) {
+                        Log::info("Notification sent to admin: {$admin->nama_lengkap} ({$phoneNumber})");
+                    } else {
+                        Log::error("Failed to send notification to admin: {$admin->nama_lengkap}");
+                    }
+                } else {
+                    Log::warning("Admin {$admin->nama_lengkap} has no phone number");
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to sendNotificationToAdmin: ' . $e->getMessage());
+            return false;
+        }
+    }
+
 
     public function sendNotificationToPIC($penanggungJawab, $tamu)
     {
@@ -46,23 +74,32 @@ class WhatsAppService
         }
     }
 
-    public function sendNotMeetNotification($tamu, $reason = null)
+    protected function buildAdminNotificationMessage($tamu)
     {
-        try {
-            $phoneNumber = $this->formatPhoneNumber($tamu->nomor_hp);
-            $message = $this->buildNotMeetMessage($tamu, $reason);
+        $tanggalKunjungan = \Carbon\Carbon::parse($tamu->tanggal_kunjungan)
+            ->locale('id')
+            ->translatedFormat('l, j F Y');
 
-            return $this->sendMessage($phoneNumber, $message);
-        } catch (\Exception $e) {
-            Log::error('Failed to sendNotMeetNotification: ' . $e->getMessage());
-            return false;
-        }
+        return "🔔 *TAMU BARU TERDAFTAR*\n\n"
+            . "Halo Admin,\n\n"
+            . "Ada pendaftaran tamu baru yang perlu diproses:\n\n"
+            . "*Detail Tamu:*\n"
+            . "Nama: {$tamu->nama_lengkap}\n"
+            . "Instansi: {$tamu->instansi}\n"
+            . "No. HP: {$tamu->nomor_hp}\n"
+            . "Tujuan Kunjungan: {$tamu->kategoriKunjungan->nama}\n"
+            . "Tanggal Kunjungan: {$tanggalKunjungan}\n"
+            . ($tamu->catatan ? "Keperluan: {$tamu->catatan}\n" : "")
+            . "\nStatus Tamu: *{$tamu->status}*\n\n"
+            . "Silakan login ke sistem untuk memproses pendaftaran ini.";
     }
 
     protected function buildFeedbackMessage($tamu)
     {
-        $link = url("/penilaian/{$tamu->kode_kunjungan}");
-        $waktuBertemu = \Carbon\Carbon::parse($tamu->waktu_temu)->format('d/m/Y H:i');
+        $link = config('app.frontend_url') . "/penilaian/{$tamu->kode_kunjungan}";
+        $waktuBertemu = \Carbon\Carbon::parse($tamu->waktu_temu)
+            ->locale('id')
+            ->translatedFormat('l, j F Y');
 
 
         return "✅ *PERTEMUAN SELESAI*\n\n"
@@ -71,36 +108,12 @@ class WhatsAppService
             . "*Detail Pertemuan:*\n"
             . "Waktu: {$waktuBertemu}\n"
             . "PIC: {$tamu->pic->user->nama_lengkap}\n"
-            . "⭐ *Berikan Penilaian Anda*\n"
+            . "*Berikan Penilaian Anda*\n"
             . "Kami sangat menghargai feedback Anda untuk meningkatkan pelayanan kami.\n\n"
             . "Klik link berikut untuk memberikan penilaian:\n"
             . "{$link}\n\n"
             . "_Link ini bersifat personal dan hanya dapat digunakan sekali._";
     }
-
-    protected function buildNotMeetMessage($tamu, $alasan = null)
-    {
-        $trackingLink = url("/tracking/{$tamu->kode_kunjungan}");
-
-        $message = "*UPDATE STATUS KUNJUNGAN*\n\n"
-            . "Halo *{$tamu->nama_lengkap}*,\n\n"
-            . "Mohon maaf, pertemuan Anda tidak dapat dilaksanakan.\n\n";
-
-        if ($alasan) {
-            $message .= "📝 *Alasan:*\n{$alasan}\n\n";
-        }
-
-        $message .= "📋 *Detail Kunjungan:*\n"
-            . "Tanggal Rencana: " . \Carbon\Carbon::parse($tamu->tanggal_kunjungan)->format('d/m/Y') . "\n"
-            . "PIC: {$tamu->pic->user->nama_lengkap}\n\n"
-            // . "🔍 *Tracking Kunjungan:*\n"
-            // . "{$trackingLink}\n\n"
-            . "Jika Anda ingin menjadwalkan ulang kunjungan, silakan daftar kembali melalui sistem.\n\n"
-            . "_Terima kasih atas pengertiannya._";
-
-        return $message;
-    }
-
 
     public function sendMessage($phoneNumber, $message)
     {
@@ -133,38 +146,11 @@ class WhatsAppService
         }
     }
 
-    public function sendConfirmationToGuest($tamu)
-    {
-        try {
-            $phoneNumber = $this->formatPhoneNumber($tamu->nomor_hp);
-            $message = $this->buildGuestConfirmationMessage($tamu);
-
-            return $this->sendMessage($phoneNumber, $message);
-        } catch (\Exception $e) {
-            Log::error('Failed to send WhatsApp confirmation to guest: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    protected function buildGuestConfirmationMessage($tamu)
-    {
-        $tanggalKunjungan = \Carbon\Carbon::parse($tamu->tanggal_kunjungan)->format('d/m/Y H:i');
-
-        return "✅ *PENDAFTARAN BERHASIL*\n\n"
-            . "Halo *{$tamu->nama_lengkap}*,\n\n"
-            . "Terima kasih telah mendaftar sebagai tamu.\n\n"
-            . "*Detail Tamu:*\n"
-            . "Instansi: {$tamu->instansi}\n"
-            . "Tujuan Kunjungan: {$tamu->kategoriKunjungan->nama}\n"
-            . "Tanggal Kunjungan: {$tanggalKunjungan}\n"
-            . ($tamu->catatan ? "Keperluan: {$tamu->catatan}\n" : "")
-            . "Kami akan segera menghubungi Anda untuk konfirmasi kunjungan.\n\n"
-            . "_Terima kasih atas kesabaran Anda._";
-    }
-
     protected function buildPICNotificationMessage($penanggungJawab, $tamu)
     {
-        $tanggalKunjungan = \Carbon\Carbon::parse($tamu->tanggal_kunjungan)->format('d/m/Y H:i');
+        $tanggalKunjungan = \Carbon\Carbon::parse($tamu->tanggal_kunjungan)
+            ->locale('id')
+            ->translatedFormat('l, j F Y');
 
         return "🔔 *NOTIFIKASI TAMU BARU*\n\n"
             . "Halo *{$penanggungJawab->user->nama_lengkap}*,\n\n"
@@ -176,7 +162,7 @@ class WhatsAppService
             . "Tujuan Kunjungan: {$tamu->kategoriKunjungan->nama}\n"
             . "Tanggal Kunjungan: {$tanggalKunjungan}\n"
             . ($tamu->catatan ? "Catatan: {$tamu->catatan}\n" : "")
-            . "\nStatus: ⏳ *{$tamu->status}*\n\n"
+            . "\nStatus Tamu: *{$tamu->status}*\n\n"
             . "Silakan login ke sistem untuk melakukan konfirmasi.";
     }
 

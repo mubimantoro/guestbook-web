@@ -8,11 +8,21 @@ use App\Http\Resources\TamuResource;
 use App\Models\Tamu;
 use App\TamuStatus;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class TamuController extends Controller
+class TamuController extends Controller implements HasMiddleware
 {
+
+    public static function middleware()
+    {
+        return [
+            new Middleware(['permission:tamu'], only: ['index', 'show', 'update', 'updateStatusTamu'])
+        ];
+    }
+
     public function index()
     {
         $tamu = Tamu::with('kategoriKunjungan')->latest()->paginate(5);
@@ -26,6 +36,7 @@ class TamuController extends Controller
         $tamu = Tamu::with([
             'kategoriKunjungan',
             'pic.user',
+            'penilaian'
         ])->whereId($id)->first();
 
         if ($tamu) {

@@ -49,10 +49,6 @@ class TamuController extends Controller
                 'status' => TamuStatus::Pending->value
             ]);
 
-            $tamu->load('kategoriKunjungan');
-
-            $this->whatsappService->sendConfirmationToGuest($tamu);
-
             event(new TamuRegistered($tamu));
 
             return new TamuResource(true, 'Pendaftaran berhasil!', $tamu);
