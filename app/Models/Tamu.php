@@ -17,6 +17,13 @@ class Tamu extends Model
         'tanggal_kunjungan',
         'catatan',
         'status',
+        'waktu_temu',
+        'alasan_batal'
+    ];
+
+    protected $casts = [
+        'tanggal_kunjungan' => 'datetime',
+        'waktu_temu' => 'datetime'
     ];
 
     protected static function boot()

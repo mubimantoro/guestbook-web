@@ -6,5 +6,7 @@ enum TamuStatus: string
 {
     case Pending = 'Menunggu Konfirmasi';
     case Approved = 'Disetujui';
-    case Cancelled = 'Dibatalkan';
+    case NotMet = 'Tidak Bertemu';
+    case Completed = 'Selesai';
+    case Rejected = "Dibatalkan";
 }

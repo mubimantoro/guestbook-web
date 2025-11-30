@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\StatusTamuUpdated;
 use App\Events\TamuRegistered;
 use App\Listeners\SendNotificationToPIC;
+use App\Listeners\SendStatusUpdateToTamu;
 use Illuminate\Support\ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -12,9 +14,9 @@ class EventServiceProvider extends ServiceProvider
         TamuRegistered::class => [
             SendNotificationToPIC::class,
         ],
-        // StatusPertemuanUpdated::class => [
-        //     SendStatusUpdateToGuest::class,
-        // ],
+        StatusTamuUpdated::class => [
+            SendStatusUpdateToTamu::class,
+        ],
         // PenilaianSubmitted::class => [
         //     LogPenilaianSubmitted::class,
         // ],

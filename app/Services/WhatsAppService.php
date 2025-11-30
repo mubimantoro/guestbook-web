@@ -28,40 +28,77 @@ class WhatsAppService
             $message = $this->buildPICNotificationMessage($penanggungJawab, $tamu);
             return $this->sendMessage($phoneNumber, $message);
         } catch (\Exception $e) {
-            Log::error('Failed to send WhatsApp notification to PIC: ' . $e->getMessage());
+            Log::error('Failed to sendNotificationtoPIC: ' . $e->getMessage());
             return false;
         }
     }
 
-    public function sendPenilaianLink($tamu)
+    public function sendFeedbackNotification($tamu)
     {
         try {
             $phoneNumber = $this->formatPhoneNumber($tamu->nomor_hp);
-            $message = $this->buildPenilaianLinkMessage($tamu);
+            $message = $this->buildFeedbackMessage($tamu);
 
             return $this->sendMessage($phoneNumber, $message);
         } catch (\Exception $e) {
-            Log::error('Failed to send penilaian link: ' . $e->getMessage());
+            Log::error('Failed to sendFeedbackNotification: ' . $e->getMessage());
             return false;
         }
     }
 
-    protected function buildPenilaianLinkMessage($tamu)
+    public function sendNotMeetNotification($tamu, $reason = null)
+    {
+        try {
+            $phoneNumber = $this->formatPhoneNumber($tamu->nomor_hp);
+            $message = $this->buildNotMeetMessage($tamu, $reason);
+
+            return $this->sendMessage($phoneNumber, $message);
+        } catch (\Exception $e) {
+            Log::error('Failed to sendNotMeetNotification: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    protected function buildFeedbackMessage($tamu)
     {
         $link = url("/penilaian/{$tamu->kode_kunjungan}");
-        $waktuBertemu = \Carbon\Carbon::parse($tamu->waktu_bertemu)->format('d/m/Y H:i');
+        $waktuBertemu = \Carbon\Carbon::parse($tamu->waktu_temu)->format('d/m/Y H:i');
+
 
         return "✅ *PERTEMUAN SELESAI*\n\n"
             . "Halo *{$tamu->nama_lengkap}*,\n\n"
             . "Terima kasih telah berkunjung!\n\n"
-            . "📋 *Detail Pertemuan:*\n"
+            . "*Detail Pertemuan:*\n"
             . "Waktu: {$waktuBertemu}\n"
-            . "PIC: {$tamu->pic->user->nama_lengkap}\n\n"
+            . "PIC: {$tamu->pic->user->nama_lengkap}\n"
             . "⭐ *Berikan Penilaian Anda*\n"
             . "Kami sangat menghargai feedback Anda untuk meningkatkan pelayanan kami.\n\n"
             . "Klik link berikut untuk memberikan penilaian:\n"
             . "{$link}\n\n"
             . "_Link ini bersifat personal dan hanya dapat digunakan sekali._";
+    }
+
+    protected function buildNotMeetMessage($tamu, $alasan = null)
+    {
+        $trackingLink = url("/tracking/{$tamu->kode_kunjungan}");
+
+        $message = "*UPDATE STATUS KUNJUNGAN*\n\n"
+            . "Halo *{$tamu->nama_lengkap}*,\n\n"
+            . "Mohon maaf, pertemuan Anda tidak dapat dilaksanakan.\n\n";
+
+        if ($alasan) {
+            $message .= "📝 *Alasan:*\n{$alasan}\n\n";
+        }
+
+        $message .= "📋 *Detail Kunjungan:*\n"
+            . "Tanggal Rencana: " . \Carbon\Carbon::parse($tamu->tanggal_kunjungan)->format('d/m/Y') . "\n"
+            . "PIC: {$tamu->pic->user->nama_lengkap}\n\n"
+            // . "🔍 *Tracking Kunjungan:*\n"
+            // . "{$trackingLink}\n\n"
+            . "Jika Anda ingin menjadwalkan ulang kunjungan, silakan daftar kembali melalui sistem.\n\n"
+            . "_Terima kasih atas pengertiannya._";
+
+        return $message;
     }
 
 
