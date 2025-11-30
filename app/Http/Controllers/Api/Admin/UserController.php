@@ -6,10 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Validator;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+
+    public static function middleware()
+    {
+        return [
+            new Middleware(['permission:users'], only: ['index', 'store', 'show', 'update', 'destroy', 'getPicUsers'])
+        ];
+    }
+
     public function index()
     {
         $users = User::when(request()->search, function ($users) {
