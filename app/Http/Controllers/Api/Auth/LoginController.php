@@ -37,9 +37,11 @@ class LoginController extends Controller
 
         return response()->json([
             'success' => true,
-            'user' => auth()->guard('api')->user()->only(['name', 'email', 'username']),
-            'permissions' => auth()->guard('api')->user()->getPermissionArray(),
-            'token' => $token
+            'data' => [
+                'user' => auth()->guard('api')->user()->only(['nama_lengkap', 'email', 'username']),
+                'permissions' => auth()->guard('api')->user()->getPermissionArray(),
+                'token' => $token
+            ]
         ], 200);
     }
 
