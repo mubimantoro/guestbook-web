@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Events\StatusTamuUpdated;
+use App\Exports\TamuExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TamuResource;
 use App\Models\Tamu;
 use App\TamuStatus;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TamuController extends Controller implements HasMiddleware
 {
@@ -23,10 +26,32 @@ class TamuController extends Controller implements HasMiddleware
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $tamu = Tamu::with('kategoriKunjungan')->latest()->paginate(5);
+        $tamu = Tamu::query()
+            ->when($request->search, function ($query, $search) {
+                $query->where('nama_lengkap', 'like', '%' . $search . '%')
+                    ->orWhere('instansi', 'like', '%' . $search . '%')
+                    ->orWhere('kode_kunjungan', 'like', '%' . $search . '%');
+            })
+            ->when($request->tanggal_dari && $request->tanggal_sampai, function ($query) use ($request) {
+                $query->whereBetween('tanggal_kunjungan', [
+                    $request->tanggal_dari . ' 00:00:00',
+                    $request->tanggal_sampai . ' 23:59:59'
+                ]);
+            })
+            ->when($request->tanggal_dari && !$request->tanggal_sampai, function ($query) use ($request) {
+                $query->whereDate('tanggal_kunjungan', '>=', $request->tanggal_dari);
+            })
+            ->when(!$request->tanggal_dari && $request->tanggal_sampai, function ($query) use ($request) {
+                $query->whereDate('tanggal_kunjungan', '<=', $request->tanggal_sampai);
+            })
+            ->with('kategoriKunjungan')
+            ->latest()
+            ->paginate(5);
 
+
+        $tamu->appends(['search' => request()->search]);
 
         return new TamuResource(true, 'List data Tamu', $tamu);
     }
@@ -130,6 +155,42 @@ class TamuController extends Controller implements HasMiddleware
             return new TamuResource(true, 'Status Tamu berhasil diupdate', $tamu);
         } catch (\Exception $e) {
             return new TamuResource(false, 'Gagal mengupdate status Tamu', null);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'tanggal_dari' => 'nullable|date',
+                'tanggal_sampai' => 'nullable|date|after_or_equal:tanggal_dari',
+                'status' => 'nullable|string',
+                'kategori_kunjungan_id' => 'nullable|exists:kategori_kunjungans,id',
+                'pic_id' => 'nullable|exists:penanggung_jawabs,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
+            }
+
+            $filters = $request->only([
+                'tanggal_dari',
+                'tanggal_sampai',
+                'status',
+                'kategori_kunjungan_id',
+                'pic_id'
+            ]);
+
+            $timestamp = Carbon::now()->format('Ymd_His');
+            $fileName = "tamu_export_{$timestamp}.xlsx";
+
+            return Excel::download(new TamuExport($filters), $fileName);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal melakukan export data',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

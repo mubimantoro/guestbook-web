@@ -33,6 +33,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     Route::apiResource('/tamu', \App\Http\Controllers\Api\Admin\TamuController::class);
     Route::put('/tamu/{tamu}/status-tamu', [\App\Http\Controllers\Api\Admin\TamuController::class, 'updateStatusTamu']);
+    Route::get('/tamu/export/excel', [\App\Http\Controllers\Api\Admin\TamuController::class, 'export']);
 
     Route::get('/permissions', [PermissionController::class, 'index']);
     Route::get('/permissions/all', [PermissionController::class, 'all']);

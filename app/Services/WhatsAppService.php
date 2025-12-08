@@ -77,6 +77,19 @@ class WhatsAppService
         }
     }
 
+    public function sendNotMeetNotification($tamu, $reason = null)
+    {
+        try {
+            $phoneNumber = $this->formatPhoneNumber($tamu->nomor_hp);
+            $message = $this->buildNotMeetMessage($tamu, $reason);
+
+            return $this->sendMessage($phoneNumber, $message);
+        } catch (\Exception $e) {
+            Log::error('Failed to sendNotMeetNotification: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     protected function buildAdminNotificationMessage($tamu)
     {
         $tanggalKunjungan = \Carbon\Carbon::parse($tamu->tanggal_kunjungan)
@@ -167,6 +180,33 @@ class WhatsAppService
             . ($tamu->catatan ? "Catatan: {$tamu->catatan}\n" : "")
             . "\nStatus Tamu: *{$tamu->status}*\n\n"
             . "Silakan login ke sistem untuk melakukan konfirmasi.";
+    }
+
+    protected function buildNotMeetMessage($tamu, $alasan = null)
+    {
+
+        $message = "*UPDATE STATUS KUNJUNGAN*\n\n"
+            . "Halo *{$tamu->nama_lengkap}*,\n\n"
+            . "Mohon maaf, pertemuan Anda tidak dapat dilaksanakan.\n\n";
+
+        if ($alasan) {
+            $message .= "*Alasan:*\n{$alasan}\n\n";
+        }
+
+        $message .= "*Detail Kunjungan:*\n"
+            . "Tanggal Rencana: " . \Carbon\Carbon::parse($tamu->tanggal_kunjungan)->locale('id')
+            ->translatedFormat('l, j F Y') . "\n";
+
+        if ($tamu->pic && $tamu->pic->user) {
+            $message .= "PIC: {$tamu->pic->user->nama_lengkap}\n\n";
+        } else {
+            $message .= "PIC: -\n\n";
+        }
+
+        $message .= "Jika Anda ingin menjadwalkan ulang kunjungan, silakan daftar kembali melalui sistem.\n\n"
+            . "_Terima kasih atas pengertiannya._";
+
+        return $message;
     }
 
     protected function formatPhoneNumber($phoneNumber)

@@ -50,6 +50,7 @@ class TamuController extends Controller
             ]);
 
             event(new TamuRegistered($tamu));
+            $tamu->load('kategoriKunjungan');
 
             return new TamuResource(true, 'Pendaftaran berhasil!', $tamu);
         } catch (\Exception $e) {
