@@ -185,8 +185,7 @@ class WhatsAppService
     protected function buildNotMeetMessage($tamu, $alasan = null)
     {
 
-        $message = "*UPDATE STATUS KUNJUNGAN*\n\n"
-            . "Halo *{$tamu->nama_lengkap}*,\n\n"
+        $message = "Halo *{$tamu->nama_lengkap}*,\n\n"
             . "Mohon maaf, pertemuan Anda tidak dapat dilaksanakan.\n\n";
 
         if ($alasan) {

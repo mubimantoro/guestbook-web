@@ -13,17 +13,21 @@ class Tamu extends Model
         'nomor_hp',
         'instansi',
         'kategori_kunjungan_id',
-        'pic_id',
+        'penanggung_jawab_id',
         'tanggal_kunjungan',
         'catatan',
         'status',
         'waktu_temu',
-        'alasan_batal'
+        'alasan_batal',
+        'is_rescheduled',
+        'reschedule_count'
     ];
 
     protected $casts = [
         'tanggal_kunjungan' => 'datetime',
-        'waktu_temu' => 'datetime'
+        'waktu_temu' => 'datetime',
+        'is_rescheduled' => 'boolean',
+        'reschedule_count' => 'integer'
     ];
 
     protected static function boot()
@@ -39,13 +43,23 @@ class Tamu extends Model
         return $this->belongsTo(KategoriKunjungan::class);
     }
 
-    public function pic()
+    public function penanggungJawab()
     {
-        return $this->belongsTo(PenanggungJawab::class, 'pic_id');
+        return $this->belongsTo(PenanggungJawab::class, 'penanggung_jawab_id');
     }
 
     public function penilaian()
     {
         return $this->hasOne(Penilaian::class, 'tamu_id');
+    }
+
+    public function riwayatRescheduleKunjungan()
+    {
+        return $this->hasMany(RiwayatRescheduleKunjungan::class)->latest();
+    }
+
+    public function latestRescheduleKunjungan()
+    {
+        return $this->hasOne(RiwayatRescheduleKunjungan::class)->latestOfMany();
     }
 }

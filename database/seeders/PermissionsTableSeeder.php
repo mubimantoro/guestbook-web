@@ -14,7 +14,8 @@ class PermissionsTableSeeder extends Seeder
     public function run(): void
     {
         Permission::create(['name' => 'kategori_kunjungan', 'guard_name' => 'api']);
-        Permission::create(['name' => 'penanggung_jawab', 'guard_name' => 'api']);
+        Permission::create(['name' => 'staff', 'guard_name' => 'api']);
+        Permission::create(['name' => 'absensi_staff', 'guard_name' => 'api']);
         Permission::create(['name' => 'tamu', 'guard_name' => 'api']);
         Permission::create(['name' => 'roles', 'guard_name' => 'api']);
         Permission::create(['name' => 'users', 'guard_name' => 'api']);

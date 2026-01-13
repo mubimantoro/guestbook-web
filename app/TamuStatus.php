@@ -8,5 +8,6 @@ enum TamuStatus: string
     case Approved = 'Disetujui';
     case NotMet = 'Tidak Bertemu';
     case Completed = 'Selesai';
-    case Rejected = "Dibatalkan";
+    case Rescheduled = 'Dijadwalkan Ulang';
+    case Cancelled = 'Dibatalkan';
 }

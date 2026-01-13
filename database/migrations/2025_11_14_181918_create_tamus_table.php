@@ -19,9 +19,13 @@ return new class extends Migration
             $table->string('instansi');
             $table->dateTime('tanggal_kunjungan')->nullable();
             $table->foreignId('kategori_kunjungan_id')->references('id')->on('kategori_kunjungans')->cascadeOnDelete();
-            $table->foreignid('pic_id')->nullable()->references('id')->on('penanggung_jawabs')->nullOnDelete();
-            $table->text('catatan')->nullable();
+            $table->foreignid('penanggung_jawab_id')->nullable()->references('id')->on('penanggung_jawabs')->nullOnDelete();
+            $table->text('catatan');
             $table->string('status');
+            $table->dateTime('waktu_temu')->nullable();
+            $table->text('alasan_batal')->nullable();
+            $table->boolean('is_rescheduled')->default(false);
+            $table->integer('reschedule_count')->default(0);
             $table->timestamps();
         });
     }

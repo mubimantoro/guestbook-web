@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class PenanggungJawab extends Model
@@ -9,12 +10,8 @@ class PenanggungJawab extends Model
     protected $fillable = [
         'user_id',
         'kategori_kunjungan_id',
-        'is_active'
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean'
-    ];
 
     public function user()
     {
@@ -23,11 +20,16 @@ class PenanggungJawab extends Model
 
     public function tamu()
     {
-        return $this->hasMany(Tamu::class, 'pic_id');
+        return $this->hasMany(Tamu::class, 'penanggung_jawab_id');
     }
 
     public function kategoriKunjungan()
     {
         return $this->belongsTo(KategoriKunjungan::class);
+    }
+
+    public function absensi()
+    {
+        return $this->hasMany(Absensi::class);
     }
 }

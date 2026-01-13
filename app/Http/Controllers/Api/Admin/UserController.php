@@ -137,6 +137,28 @@ class UserController extends Controller implements HasMiddleware
         return new UserResource(false, 'Data User gagal dihapus', null);
     }
 
+    public function getStaffUsers()
+    {
+        try {
+            $users = User::role('staff')
+                ->select('id', 'nama_lengkap')
+                ->orderBy('nama_lengkap', 'asc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'List user staff',
+                'data' => $users
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data user staff',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getPicUsers()
     {
         $users = User::role('pic')->get();
