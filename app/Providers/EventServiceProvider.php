@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Events\StatusTamuUpdated;
 use App\Events\TamuRegistered;
+use App\Events\TamuRescheduled;
 use App\Listeners\SendNotificationToAdmin;
 use App\Listeners\SendNotificationToPIC;
+use App\Listeners\SendRescheduleNotification;
 use App\Listeners\SendStatusUpdateToTamu;
 use Illuminate\Support\ServiceProvider;
 
@@ -19,6 +21,9 @@ class EventServiceProvider extends ServiceProvider
         StatusTamuUpdated::class => [
             SendStatusUpdateToTamu::class,
         ],
+        TamuRescheduled::class => [
+            SendRescheduleNotification::class,
+        ]
     ];
     /**
      * Register services.

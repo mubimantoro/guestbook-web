@@ -34,9 +34,9 @@ class SendNotificationToPIC
     {
         $tamu = $event->tamu;
         $pic = PenanggungJawab::where('kategori_kunjungan_id', $tamu->kategori_kunjungan_id)
-            ->where('is_active', true)
             ->with('user')
-            ->first();
+            ->find($tamu->penanggung_jawab_id);
+
 
         if ($pic) {
             $tamu->update(['pic_id' => $pic->id]);

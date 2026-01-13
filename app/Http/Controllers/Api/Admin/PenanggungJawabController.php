@@ -18,7 +18,7 @@ class PenanggungJawabController extends Controller implements HasMiddleware
     public static function middleware()
     {
         return [
-            new Middleware(['permission:penanggung_jawab'], only: ['index', 'store', 'show', 'update', 'update', 'destroy'])
+            new Middleware(['permission:staff'], only: ['index', 'store', 'show', 'update', 'update', 'destroy'])
         ];
     }
 
@@ -31,30 +31,39 @@ class PenanggungJawabController extends Controller implements HasMiddleware
 
     public function store(Request $request)
     {
+
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|exists:users,id',
+            'kategori_kunjungan_id' => 'required|exists:kategori_kunjungans,id'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
         try {
-            DB::beginTransaction();
+            $exists = PenanggungJawab::where('user_id', $request->user_id)
+                ->where('kategori_kunjungan_id', $request->kategori_kunjungan_id)
+                ->exists();
 
-            $validator = Validator::make($request->all(), [
-                'user_id' => 'required|exists:users,id',
-                'kategori_kunjungan_id' => 'required|exists:kategori_kunjungans,id'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json($validator->errors(), 422);
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Staff sudah terdaftar untuk kategori ini'
+                ], 422);
             }
 
             $penanggungJawab = PenanggungJawab::create([
                 'user_id' => $request->user_id,
                 'kategori_kunjungan_id' => $request->kategori_kunjungan_id
             ]);
-            DB::commit();
-            return new PenanggungJawabResource(true, 'Data Penanggung Jawab berhasil disimpan', $penanggungJawab);
+
+            $penanggungJawab->load(['user', 'kategoriKunjungan']);
+            return new PenanggungJawabResource(true, 'Data Staff berhasil ditambahkan', $penanggungJawab);
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error creating penanggung jawab: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Data Penanggung Jawab gagal disimpan',
+                'message' => 'Gagal menambahkan staff',
                 'error' => $e->getMessage()
             ], 500);
         }

@@ -19,7 +19,7 @@ class DashboardController extends Controller
                 // Total keseluruhan
                 'total_tamu' => Tamu::count(),
                 'total_kategori' => KategoriKunjungan::count(),
-                'total_pic' => PenanggungJawab::where('is_active', 1)->count(),
+                'total_pic' => PenanggungJawab::count(),
 
                 // Statistik berdasarkan status
                 'status_summary' => [
@@ -53,6 +53,47 @@ class DashboardController extends Controller
                 'success' => false,
                 'message' => 'Gagal mengambil statistik dashboard',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function topStaffByVisitors(Request $request)
+    {
+        try {
+            $limit = $request->input('limit', 10);
+
+            $topStaff = PenanggungJawab::select(
+                'penanggung_jawabs.id',
+                'penanggung_jawabs.user_id',
+                DB::raw('COUNT(tamus.id) as total_tamu')
+            )
+                ->join('users', 'penanggung_jawabs.user_id', '=', 'users.id')
+                ->leftJoin('tamus', 'penanggung_jawabs.id', '=', 'tamus.penanggung_jawab_id')
+                ->groupBy('penanggung_jawabs.id', 'penanggung_jawabs.user_id')
+                ->orderBy('total_tamu', 'desc')
+                ->limit($limit)
+                ->with(['user:id,nama_lengkap,email', 'kategoriKunjungan:id,nama_kategori'])
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'nama_staff' => $item->user->nama_lengkap,
+                        'email' => $item->user->email,
+                        'kategori' => $item->kategoriKunjungan->nama_kategori ?? 'N/A',
+                        'total_tamu' => $item->total_tamu,
+                        'initial' => strtoupper(substr($item->user->nama_lengkap, 0, 1))
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data staff penerima tamu terbanyak berhasil diambil',
+                'data' => $topStaff
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
             ], 500);
         }
     }

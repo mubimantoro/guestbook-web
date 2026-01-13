@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Public;
 use App\Events\TamuRegistered;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TamuResource;
-use App\Jobs\SendWhatsAppNotification;
 use App\Models\PenanggungJawab;
 use App\Models\Tamu;
 use App\Services\WhatsAppService;
@@ -31,12 +30,23 @@ class TamuController extends Controller
                 'nomor_hp' => 'required|string|max:15',
                 'instansi' => 'required|string',
                 'kategori_kunjungan_id' => 'required',
+                'penanggung_jawab_id' => 'required|exists:penanggung_jawabs,id',
                 'tanggal_kunjungan' => 'date',
-                'catatan' => 'nullable|string',
+                'catatan' => 'required|string',
             ]);
 
             if ($validator->fails()) {
                 return response()->json($validator->errors(), 422);
+            }
+
+            $penanggungJawab = PenanggungJawab::find($request->penanggung_jawab_id);
+
+            if ($penanggungJawab->kategori_kunjungan_id != $request->kategori_kunjungan_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Staff yang dipilih tidak sesuai dengan kategori kunjungan'
+
+                ], 422);
             }
 
             $tamu = Tamu::create([
@@ -44,6 +54,7 @@ class TamuController extends Controller
                 'nomor_hp' => $request->nomor_hp,
                 'instansi' => $request->instansi,
                 'kategori_kunjungan_id' => $request->kategori_kunjungan_id,
+                'penanggung_jawab_id' => $request->penanggung_jawab_id,
                 'tanggal_kunjungan' => $request->tanggal_kunjungan,
                 'catatan' => $request->catatan,
                 'status' => TamuStatus::Pending->value

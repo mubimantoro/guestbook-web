@@ -16,7 +16,7 @@ class TamuExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
     public function query()
     {
         return Tamu::query()
-            ->with(['kategoriKunjungan', 'pic.user', 'penilaian'])
+            ->with(['kategoriKunjungan', 'penanggungJawab.user', 'penilaian'])
             ->select([
                 'id',
                 'kode_kunjungan',
@@ -24,7 +24,7 @@ class TamuExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
                 'nomor_hp',
                 'instansi',
                 'kategori_kunjungan_id',
-                'pic_id',
+                'penanggung_jawab_id',
                 'tanggal_kunjungan',
                 'catatan',
                 'status',
@@ -44,7 +44,7 @@ class TamuExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
             'Nomor HP',
             'Instansi',
             'Kategori Kunjungan',
-            'PIC',
+            'Penanggung Jawab',
             'Tanggal Kunjungan',
             'Status',
             'Waktu Temu',
