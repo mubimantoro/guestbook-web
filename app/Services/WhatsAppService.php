@@ -51,6 +51,55 @@ class WhatsAppService
         }
     }
 
+    public function sendRescheduleNotification($tamu, $reschedule)
+    {
+        try {
+            $phoneNumber = $this->formatPhoneNumber($tamu->nomor_hp);
+            $message = $this->buildRescheduleMessage($tamu, $reschedule);
+
+            return $this->sendMessage($phoneNumber, $message);
+        } catch (\Exception $e) {
+            Log::error('Failed to sendRescheduleNotification: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    protected function buildRescheduleMessage($tamu, $reschedule)
+    {
+        $jadwalLama = \Carbon\Carbon::parse($reschedule->jadwal_lama)
+            ->locale('id')
+            ->translatedFormat('l, j F Y - H:i');
+
+        $jadwalBaru = \Carbon\Carbon::parse($reschedule->jadwal_baru)
+            ->locale('id')
+            ->translatedFormat('l, j F Y - H:i');
+
+        $message = "*PENJADWALAN ULANG KUNJUNGAN*\n\n"
+            . "Halo *{$tamu->nama_lengkap}*,\n\n"
+            . "Jadwal kunjungan Anda telah diubah.\n\n"
+            . "*Detail Perubahan:*\n"
+            . "Jadwal Lama: {$jadwalLama}\n"
+            . "Jadwal Baru: {$jadwalBaru}\n\n";
+
+        if ($reschedule->alasan_reschedule) {
+            $message .= "*Alasan Perubahan:*\n{$reschedule->alasan_reschedule}\n\n";
+        }
+
+        $message .= "*Informasi Kunjungan:*\n"
+            . "Kode Kunjungan: {$tamu->kode_kunjungan}\n"
+            . "Instansi: {$tamu->instansi}\n"
+            . "Tujuan: {$tamu->kategoriKunjungan->nama}\n";
+
+        if ($tamu->penanggungJawab && $tamu->penanggungJawab->user) {
+            $message .= "Penanggung Jawab: {$tamu->penanggungJawab->user->nama_lengkap}\n";
+        }
+
+        $message .= "\n_Mohon untuk hadir sesuai jadwal baru._\n\n"
+            . "Terima kasih atas pengertiannya.";
+
+        return $message;
+    }
+
 
     public function sendNotificationToPIC($penanggungJawab, $tamu)
     {

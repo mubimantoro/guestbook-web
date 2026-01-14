@@ -18,7 +18,6 @@ return new class extends Migration
             $table->dateTime('jadwal_baru');
             $table->text('alasan_reschedule');
             $table->foreignId('reschedule_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('status', 50);
             $table->boolean('whatsapp_sent')->default(false);
             $table->timestamps();
         });
