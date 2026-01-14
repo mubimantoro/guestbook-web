@@ -209,7 +209,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Get trend kunjungan per minggu (8 minggu terakhir)
+     * trend kunjungan per minggu
      */
     public function trendKunjunganMingguan()
     {

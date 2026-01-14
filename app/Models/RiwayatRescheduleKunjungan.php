@@ -12,7 +12,6 @@ class RiwayatRescheduleKunjungan extends Model
         'jadwal_baru',
         'alasan_reschedule',
         'reschedule_by',
-        'status',
         'whatsapp_sent'
     ];
 
